@@ -1,0 +1,73 @@
+/* 自定义工具类 */
+.content-auto {
+  content-visibility: auto;
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+}
+
+.bg-blur {
+  backdrop-filter: blur(8px);
+}
+
+/* 基础样式 */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* 动画类 */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #165DFF;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0f46d1;
+}
+
+/* Tailwind 扩展颜色（和HTML中配置对应） */
+:root {
+  --primary: #165DFF;
+  --secondary: #D4AF37;
+  --dark: #1E293B;
+  --light: #F8FAFC;
+}
+
+/* 适配图标（Font Awesome） */
+.fa-crystal-ball {
+  /* 自定义水晶球图标样式 */
+  font-size: 1.5rem;
+}
