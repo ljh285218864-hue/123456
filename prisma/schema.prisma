@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -142,6 +142,7 @@ model StorefrontProduct {
   storefront   Storefront @relation(fields: [storefrontId], references: [id])
   product      Product    @relation(fields: [productId], references: [id])
   createdAt    DateTime   @default(now())
+
   @@unique([storefrontId, productId])
 }
 
@@ -158,11 +159,11 @@ model RecommendationSet {
 model RecommendationSlot {
   id                  String @id @default(cuid())
   recommendationSetId String
-  storefrontId         String
-  position             Int
-  source               String
-  isCompleted          Boolean @default(false)
-  recommendationSet    RecommendationSet @relation(fields: [recommendationSetId], references: [id])
+  storefrontId        String
+  position            Int
+  source              String
+  isCompleted         Boolean @default(false)
+  recommendationSet   RecommendationSet @relation(fields: [recommendationSetId], references: [id])
 }
 
 model Order {
