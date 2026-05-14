@@ -17,7 +17,7 @@ export default function AccountPage() {
         <div className="card" style={{ marginBottom: 20 }}>
           <h2>My Storefront</h2>
           <p className="muted">Upload avatar, set nickname, add products, and share your storefront. Avatar upload is allowed; administrators can reset inappropriate images.</p>
-          <button className="btn" type="button">Manage Storefront</button>
+          <Link className="btn" href="/storefront">Manage Storefront</Link>
         </div>
         <div className="card" style={{ marginBottom: 20 }}>
           <h2>Commission Balance</h2>
