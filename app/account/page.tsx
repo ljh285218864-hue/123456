@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CurrentUserCard from '@/components/CurrentUserCard';
 
 const commissions = [
   { id: 'C-1001', amount: '+$20', status: 'Awaiting Confirmation', countdown: '7 days to auto-confirm' },
@@ -9,8 +10,9 @@ const commissions = [
 export default function AccountPage() {
   return (
     <>
-      <nav className="nav"><div className="brand">ShareMall</div><div className="navlinks"><Link href="/">Home</Link><Link href="/recommendations">Recommended Stores</Link></div></nav>
+      <nav className="nav"><div className="brand">ShareMall</div><div className="navlinks"><Link href="/">Home</Link><Link href="/recommendations">Recommended Stores</Link><Link href="/orders">Orders</Link><Link href="/withdrawals">Withdrawals</Link></div></nav>
       <main className="container">
+        <CurrentUserCard />
         <div className="grid grid-3" style={{ marginBottom: 20 }}>
           <div className="card stat"><span className="pill">Bronze · Trial Active</span><strong>10 days</strong><span className="muted">Complete 3 valid invitations to activate Bronze.</span></div>
           <div className="card stat"><span className="pill muted">Valid Invitations</span><strong>1 / 3</strong><span className="muted">Only valid members passing risk checks count.</span></div>
