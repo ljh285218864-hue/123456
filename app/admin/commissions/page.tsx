@@ -1,3 +1,6 @@
+import CommissionGrantForm from '@/components/CommissionGrantForm';
+import JobRunButton from '@/components/JobRunButton';
+
 const rows = [
   ['U1001', '$20', '未结算', '订单佣金', '2026-06-18'],
   ['U1002', '$20', '待确认', '后台手动发放', '2026-06-20'],
@@ -15,6 +18,11 @@ export default function CommissionsPage() {
         <div className="card stat"><span className="muted">已结算佣金</span><strong>$8,220</strong></div>
         <div className="card stat"><span className="muted">不足$100金额</span><strong>$3,460</strong></div>
         <div className="card stat"><span className="muted">已奖励佣金</span><strong>$1,960</strong></div>
+      </div>
+      <div className="grid grid-3" style={{ marginBottom: 20 }}>
+        <div className="card"><h3>手动发放 $20</h3><CommissionGrantForm /></div>
+        <div className="card"><h3>自动确认任务</h3><p className="muted">执行到期订单的7天自动确认。</p><JobRunButton label="运行自动确认" endpoint="/api/jobs/auto-confirm" /></div>
+        <div className="card"><h3>自动结算任务</h3><p className="muted">执行到期佣金的自动结算。</p><JobRunButton label="运行自动结算" endpoint="/api/jobs/settle-commissions" /></div>
       </div>
       <table className="table"><thead><tr><th>用户</th><th>金额</th><th>状态</th><th>后台来源</th><th>预计结算</th></tr></thead><tbody>{rows.map((r, i) => <tr key={i}>{r.map(c => <td key={c}>{c}</td>)}</tr>)}</tbody></table>
     </>
