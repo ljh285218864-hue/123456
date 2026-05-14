@@ -52,11 +52,11 @@ export const TEMP_EMAIL_BLACKLIST = [
 ];
 
 export const MEMBER_LEVELS = [
-  { key: 'BRONZE', zh: '青铜', en: 'Bronze', validInvites: 0, exposureWeight: 1, pool: 'LOW' },
-  { key: 'SILVER', zh: '白银', en: 'Silver', validInvites: 3, exposureWeight: 2, pool: 'MID' },
-  { key: 'GOLD', zh: '黄金', en: 'Gold', validInvites: 5, exposureWeight: 4, pool: 'HIGH' },
-  { key: 'PLATINUM', zh: '铂金', en: 'Platinum', validInvites: 10, exposureWeight: 7, pool: 'HIGH' },
-  { key: 'DIAMOND', zh: '钻石', en: 'Diamond', validInvites: 20, exposureWeight: 12, pool: 'HIGH' },
+  { key: 'BRONZE', zh: '青铜', en: 'Bronze', validInvites: 0, exposureWeight: 1, pool: 'LOW', bonusEligible: false },
+  { key: 'SILVER', zh: '白银', en: 'Silver', validInvites: 3, exposureWeight: 2, pool: 'MID', bonusEligible: false },
+  { key: 'GOLD', zh: '黄金', en: 'Gold', validInvites: 5, exposureWeight: 4, pool: 'HIGH', bonusEligible: false },
+  { key: 'PLATINUM', zh: '铂金', en: 'Platinum', validInvites: 10, exposureWeight: 7, pool: 'HIGH', bonusEligible: false },
+  { key: 'DIAMOND', zh: '钻石', en: 'Diamond', validInvites: 20, exposureWeight: 12, pool: 'HIGH', bonusEligible: false },
   { key: 'BLACK_GOLD', zh: '黑金', en: 'Black Gold', validInvites: 50, exposureWeight: 20, pool: 'HIGH', bonusEligible: true }
 ] as const;
 
