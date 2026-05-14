@@ -2,6 +2,15 @@ import { NextResponse } from 'next/server';
 import { getCurrentSession } from '@/lib/session';
 import { prisma } from '@/lib/db';
 
+type CommissionListItem = {
+  id: string;
+  amountCents: number;
+  status: string;
+  confirmedAt: Date | null;
+  settledAt: Date | null;
+  createdAt: Date;
+};
+
 function statusLabel(status: string) {
   const labels: Record<string, string> = {
     UNSETTLED: 'Unsettled',
@@ -26,7 +35,7 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    commissions: commissions.map(item => ({
+    commissions: commissions.map((item: CommissionListItem) => ({
       id: item.id,
       amount: `$${(item.amountCents / 100).toFixed(2)}`,
       label: 'Commission',
