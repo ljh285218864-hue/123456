@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import PayPalActivationButton from './PayPalActivationButton';
 
 type Store = {
   slotId: string;
@@ -16,14 +17,22 @@ type Store = {
   };
 };
 
+type CurrentUser = { id: string } | null;
+
 export default function RealRecommendations() {
   const [stores, setStores] = useState<Store[]>([]);
   const [recommendationSetId, setRecommendationSetId] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<Record<string, string>>({});
   const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<CurrentUser>(null);
+  const [shipping, setShipping] = useState({ name: '', address: '', city: '', state: '', zip: '', country: 'US' });
 
   useEffect(() => {
+    fetch('/api/me').then(async response => {
+      if (!response.ok) return;
+      const data = await response.json();
+      setUser(data.user);
+    });
     fetch('/api/recommendations/current/details').then(async response => {
       if (!response.ok) return;
       const data = await response.json();
@@ -33,46 +42,16 @@ export default function RealRecommendations() {
   }, []);
 
   const selectedCount = useMemo(() => Object.keys(selectedProducts).length, [selectedProducts]);
+  const checkoutItems = useMemo(() => Object.entries(selectedProducts).map(([storefrontId, productId]) => ({ storefrontId, productId })), [selectedProducts]);
+  const shippingReady = Boolean(shipping.name && shipping.address && shipping.city && shipping.state && shipping.zip && shipping.country);
+  const checkoutReady = Boolean(user?.id && recommendationSetId && selectedCount === 10 && shippingReady);
 
   function selectProduct(storefrontId: string, productId: string) {
     setSelectedProducts(prev => ({ ...prev, [storefrontId]: productId }));
   }
 
-  async function checkout() {
-    setLoading(true);
-    setMessage('');
-    if (!recommendationSetId) {
-      setMessage('Recommendation set is not ready.');
-      setLoading(false);
-      return;
-    }
-    if (selectedCount !== 10) {
-      setMessage('Please choose one product from each of the 10 recommended stores.');
-      setLoading(false);
-      return;
-    }
-    const meResponse = await fetch('/api/me');
-    const me = await meResponse.json();
-    const response = await fetch('/api/checkout/activation/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: me.user.id,
-        recommendationSetId,
-        items: Object.entries(selectedProducts).map(([storefrontId, productId]) => ({ storefrontId, productId })),
-        shipping: {
-          name: 'Customer Name Required',
-          address: 'Shipping Address Required',
-          city: 'City',
-          state: 'State',
-          zip: 'Zip',
-          country: 'US'
-        }
-      })
-    });
-    const data = await response.json().catch(() => ({}));
-    setLoading(false);
-    setMessage(response.ok ? `PayPal order created: ${data.paypalOrder?.id || data.orderId}` : data.error || 'Checkout failed.');
+  function updateShipping(field: keyof typeof shipping, value: string) {
+    setShipping(prev => ({ ...prev, [field]: value }));
   }
 
   if (!stores.length) return <p className="muted">No recommendation stores available yet. Please ask the admin to generate official accounts and products.</p>;
@@ -108,9 +87,20 @@ export default function RealRecommendations() {
         })}
       </div>
       <div className="card" style={{ marginTop: 22 }}>
+        <h3>Shipping address</h3>
+        <div className="grid grid-3">
+          <input className="input" placeholder="Full name" value={shipping.name} onChange={event => updateShipping('name', event.target.value)} />
+          <input className="input" placeholder="Street address" value={shipping.address} onChange={event => updateShipping('address', event.target.value)} />
+          <input className="input" placeholder="City" value={shipping.city} onChange={event => updateShipping('city', event.target.value)} />
+          <input className="input" placeholder="State" value={shipping.state} onChange={event => updateShipping('state', event.target.value)} />
+          <input className="input" placeholder="ZIP code" value={shipping.zip} onChange={event => updateShipping('zip', event.target.value)} />
+          <input className="input" placeholder="Country" value={shipping.country} onChange={event => updateShipping('country', event.target.value)} />
+        </div>
+      </div>
+      <div className="card" style={{ marginTop: 22 }}>
         <h3>Checkout summary</h3>
         <p className="muted">Required total: 10 products × $59 = $590. PayPal supports PayPal account or card payment.</p>
-        <button className="btn" type="button" onClick={checkout} disabled={loading}>{loading ? 'Creating PayPal Order...' : 'Pay with PayPal / Card'}</button>
+        {user?.id ? <PayPalActivationButton userId={user.id} recommendationSetId={recommendationSetId} items={checkoutItems} shipping={shipping} disabled={!checkoutReady} onMessage={setMessage} /> : <p className="muted">Please sign in to continue.</p>}
         {message ? <p className="muted">{message}</p> : null}
       </div>
     </>
