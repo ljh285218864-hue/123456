@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ACTIVATION, MONEY } from '@/lib/constants';
 import { formatMoney } from '@/lib/rules';
+import RecommendationCheckout from '@/components/RecommendationCheckout';
 
 const demoStores = [
   'Mia Home Picks','Emma Daily Finds','Olivia Essentials','Noah Smart Living','Sophia Home Store',
@@ -32,10 +33,8 @@ export default function RecommendationsPage() {
             </div>
           ))}
         </div>
-        <div style={{ marginTop: 22 }} className="card">
-          <h3>Checkout summary</h3>
-          <p className="muted">Required total: 10 products × $59 = $590. PayPal is the first payment entry and supports PayPal account or card payment.</p>
-          <button className="btn" type="button">Pay with PayPal / Card</button>
+        <div style={{ marginTop: 22 }}>
+          <RecommendationCheckout />
         </div>
       </main>
     </>
