@@ -1,5 +1,5 @@
-import { sampleProducts } from '@/lib/mock-data';
 import ProductCreateForm from '@/components/ProductCreateForm';
+import AdminProductsTable from '@/components/AdminProductsTable';
 
 export default function ProductsPage() {
   return (
@@ -10,7 +10,7 @@ export default function ProductsPage() {
         <h3>新增商品</h3>
         <ProductCreateForm />
       </div>
-      <table className="table"><thead><tr><th>商品</th><th>SKU</th><th>价格</th><th>库存</th><th>状态</th></tr></thead><tbody>{sampleProducts.map(item => <tr key={item.sku}><td>{item.title}</td><td>{item.sku}</td><td>{item.price}</td><td>{item.inventory}</td><td><span className="pill">上架</span></td></tr>)}</tbody></table>
+      <AdminProductsTable />
     </>
   );
 }
