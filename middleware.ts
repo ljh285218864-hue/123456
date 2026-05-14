@@ -1,16 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifySession } from './lib/auth';
 
 const ADMIN_PUBLIC_PATHS = ['/admin/login'];
-const CUSTOMER_PUBLIC_PATHS = ['/', '/login', '/register', '/recommendations'];
+
+function decodeJwtPayload(token: string): { role?: string } | null {
+  try {
+    const payload = token.split('.')[1];
+    if (!payload) return null;
+    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+    const json = atob(normalized);
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('sharemall_session')?.value;
-  const session = token ? verifySession(token) : null;
+  const session = token ? decodeJwtPayload(token) : null;
 
   if (pathname.startsWith('/admin') && !ADMIN_PUBLIC_PATHS.includes(pathname)) {
-    if (!session || !['ADMIN', 'SUPER_ADMIN'].includes(session.role)) {
+    if (!session || !['ADMIN', 'SUPER_ADMIN'].includes(String(session.role))) {
       const url = request.nextUrl.clone();
       url.pathname = '/admin/login';
       return NextResponse.redirect(url);
