@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
@@ -19,12 +21,6 @@ export async function GET() {
       status: order.status,
       total: `$${(order.totalCents / 100).toFixed(2)}`,
       paypalOrderId: order.paypalOrderId,
-      shippingName: order.shippingName,
-      shippingAddress: order.shippingAddress,
-      shippingCity: order.shippingCity,
-      shippingState: order.shippingState,
-      shippingZip: order.shippingZip,
-      shippingCountry: order.shippingCountry,
       shippedAt: order.shippedAt,
       confirmedAt: order.confirmedAt,
       autoConfirmAt: order.autoConfirmAt,
