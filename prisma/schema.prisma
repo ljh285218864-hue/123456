@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole { CUSTOMER ADMIN SUPER_ADMIN }
+enum MemberStatus { NONE BRONZE_TRIAL BRONZE_ACTIVE EXPIRED FROZEN }
+enum MemberLevel { BRONZE SILVER GOLD PLATINUM DIAMOND BLACK_GOLD }
+enum OrderStatus { DRAFT PENDING_PAYMENT PAID SHIPPED CONFIRMED REFUND_REQUESTED REFUNDED CANCELLED }
+enum CommissionStatus { UNSETTLED AWAITING_CONFIRMATION SETTLEMENT_PENDING SETTLED WITHDRAWN CANCELLED }
+enum CommissionSource { ORDER ADMIN_GRANT RANDOM_GRANT PLATFORM_BONUS }
+enum InviteStatus { REGISTERED PENDING_PURCHASE PENDING_RISK_REVIEW VALID INVALID }
+enum RiskDecision { PASS REVIEW INVALID }
+enum WithdrawalStatus { PENDING APPROVED REJECTED PAID }
+
+model User {
+  id                String       @id @default(cuid())
+  email             String       @unique
+  passwordHash      String
+  nickname          String
+  avatarUrl         String?
+  role              UserRole     @default(CUSTOMER)
+  invitationCode    String       @unique
+  invitedById       String?
+  invitedBy         User?        @relation("InvitationTree", fields: [invitedById], references: [id])
+  directInvites     User[]       @relation("InvitationTree")
+  isOfficial        Boolean      @default(false)
+  memberStatus      MemberStatus @default(NONE)
+  memberLevel       MemberLevel  @default(BRONZE)
+  trialStartedAt    DateTime?
+  trialExpiresAt    DateTime?
+  activeStartedAt   DateTime?
+  frozenAt          DateTime?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  storefront        Storefront?
+  orders            Order[]      @relation("BuyerOrders")
+  commissions       Commission[]
+  withdrawals       Withdrawal[]
+  riskEvents        RiskEvent[]
+}
+
+model Storefront {
+  id              String   @id @default(cuid())
+  ownerId         String   @unique
+  owner           User     @relation(fields: [ownerId], references: [id])
+  title           String
+  bio             String?
+  isActive        Boolean  @default(false)
+  isRecommendable Boolean  @default(false)
+  exposureWeight  Float    @default(1)
+  exposureCount   Int      @default(0)
+  clickCount      Int      @default(0)
+  orderCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  products        StorefrontProduct[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  priceCents  Int      @default(5900)
+  sku         String?  @unique
+  imageUrl    String?
+  inventory   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  storefronts StorefrontProduct[]
+  items       OrderItem[]
+}
+
+model StorefrontProduct {
+  id           String     @id @default(cuid())
+  storefrontId String
+  productId    String
+  storefront   Storefront @relation(fields: [storefrontId], references: [id])
+  product      Product    @relation(fields: [productId], references: [id])
+  createdAt    DateTime   @default(now())
+  @@unique([storefrontId, productId])
+}
+
+model RecommendationSet {
+  id        String   @id @default(cuid())
+  userId    String
+  dayKey    String
+  isLocked  Boolean  @default(false)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  slots     RecommendationSlot[]
+}
+
+model RecommendationSlot {
+  id                  String @id @default(cuid())
+  recommendationSetId String
+  storefrontId         String
+  position             Int
+  source               String
+  isCompleted          Boolean @default(false)
+  recommendationSet    RecommendationSet @relation(fields: [recommendationSetId], references: [id])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  buyerId         String
+  buyer           User        @relation("BuyerOrders", fields: [buyerId], references: [id])
+  status          OrderStatus @default(PENDING_PAYMENT)
+  paypalOrderId   String?
+  totalCents      Int
+  shippingName    String
+  shippingPhone   String?
+  shippingAddress String
+  shippingCity    String
+  shippingState   String?
+  shippingZip     String
+  shippingCountry String
+  shippedAt       DateTime?
+  deliveredAt     DateTime?
+  confirmedAt     DateTime?
+  autoConfirmAt   DateTime?
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+  commissions     Commission[]
+}
+
+model OrderItem {
+  id           String @id @default(cuid())
+  orderId      String
+  productId    String
+  storefrontId String
+  quantity     Int    @default(1)
+  priceCents   Int    @default(5900)
+  order        Order   @relation(fields: [orderId], references: [id])
+  product      Product @relation(fields: [productId], references: [id])
+}
+
+model Commission {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id])
+  orderId       String?
+  order         Order?           @relation(fields: [orderId], references: [id])
+  amountCents   Int              @default(2000)
+  status        CommissionStatus @default(UNSETTLED)
+  source        CommissionSource
+  visibleLabel  String           @default("Commission")
+  confirmedAt   DateTime?
+  settledAt     DateTime?
+  withdrawnAt   DateTime?
+  internalNote  String?
+  taskId        String?
+  createdAt     DateTime         @default(now())
+}
+
+model CommissionTask {
+  id             String   @id @default(cuid())
+  userId         String
+  totalRuns      Int
+  completedRuns  Int      @default(0)
+  windowStartsAt DateTime
+  windowEndsAt   DateTime
+  status         String   @default("PENDING")
+  createdById    String
+  internalNote   String?
+  createdAt      DateTime @default(now())
+}
+
+model InvitationRecord {
+  id         String       @id @default(cuid())
+  inviterId  String
+  inviteeId  String
+  status     InviteStatus @default(REGISTERED)
+  reason     String?
+  createdAt  DateTime     @default(now())
+  reviewedAt DateTime?
+}
+
+model RiskEvent {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  type      String
+  decision  RiskDecision @default(REVIEW)
+  reason    String
+  metadata  Json?
+  createdAt DateTime     @default(now())
+}
+
+model Withdrawal {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id])
+  amountCents Int
+  method      String
+  accountInfo Json
+  status      WithdrawalStatus @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime         @default(now())
+  paidAt      DateTime?
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  adminId   String
+  action    String
+  target    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
